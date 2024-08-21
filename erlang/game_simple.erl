@@ -1,35 +1,12 @@
 %Typist Battle!
+%Simple implementation
 -module(game).
--export([single/0, battle/0]).
+-export([single/0, battle/0, get_maxtime/0]).
 
 get_maxtime() -> 3. %30 seconds per line
 
-% read in from a file
-% default filename: scarecrow.txt
-get_lines_from_file() -> 
-    Input = string:trim(io:get_line("Specify which text you want. We have scarecrow, fish and test \n")),
-    TargetFile = "data/" ++ Input ++ ".txt",
-    case filelib:is_file(TargetFile) of 
-        true -> 
-            ChosenFile = TargetFile;
-        false -> 
-            io:format("~p not found. Using scarecrow as default ~n", [TargetFile]),
-            ChosenFile = "data/scarecrow.txt"
-    end,
-    {ok, Binary} = file:read_file(ChosenFile), 
-    Content = binary_to_list(Binary), 
-    Lines = string:split(Content, ["\n"], all),
-    Lines.
-
-% get words from each line
-get_wordlist(Line) -> string:split(Line, " ", all).
-
 % formatting functions
 clear_line() -> io:format("~c[2K", [27]).
-clear_screen() -> 
-    io:format("~c[2J", [27]), 
-    % move cursor to top left
-    io:format("~c[H", [27]).
 
 connect(OtherNodeIP, MaxRetry) ->
     io:format("Trying to connect to ~s ... \n", [OtherNodeIP]),
@@ -47,23 +24,24 @@ connect(OtherNodeIP, MaxRetry) ->
     end.
 
 battle() ->
-    clear_screen(),
+    util:clear_screen(),
     io:format("Starting the battle! \n"),
     OtherNodeIP = list_to_atom(string:trim(io:get_line("Enter the other node address, for example bong@192.168.1.70 \n"))),
     connect(OtherNodeIP, 10).
 
 single() -> 
-    clear_screen(),
+    util:clear_screen(),
     io:format("Starting game in single player mode. If you want to battle, use battle()~n"),
     OtherNodeIP = list_to_atom("phantom@1.2.3.4"),
     start(OtherNodeIP).
 
 start(OtherNodeIP) -> 
-    clear_screen(), % ANSI code to clear the screen
+    util:clear_screen(), % ANSI code to clear the screen
     % Spawn the game loop with initial state
-    [FirstLine | NextLines] = get_lines_from_file(),
-    clear_screen(),
-    GameLoopPid = spawn(fun() -> game_loop({0, get_wordlist(FirstLine), NextLines, get_maxtime(), OtherNodeIP}) end),
+    util:clear_screen(),
+    [FirstLine | NextLines] = util:get_lines_from_file(),
+    util:clear_screen(),
+    GameLoopPid = spawn(fun() -> game_loop({0, util:get_wordlist(FirstLine), NextLines, get_maxtime(), OtherNodeIP}) end),
     register(typist, GameLoopPid),
     % Spawn a process to handle user input, passing the game loop pid
     input_loop().    
@@ -71,19 +49,9 @@ start(OtherNodeIP) ->
 input_loop() ->
     Input = io:get_line(""),
     [InputTrimmed|_] = string:split(Input, "\n"),
-    WordsList = get_wordlist(InputTrimmed),
+    WordsList = util:get_wordlist(InputTrimmed),
     typist ! {user_input, WordsList},
     input_loop().
-
-%find longest matching heads of TypedWords vs WordsToType, 
-%take away the match and returns the tail of WordsToType
-match_head(_, []) -> [];
-match_head([], WordsToType) -> WordsToType;
-match_head([H1|T1], [Word|WordsToType]) -> 
-    if 
-        H1 =:= Word -> match_head(T1, WordsToType);
-        H1 =/= Word -> [Word|WordsToType]
-    end.
 
 game_loop({Score, WordsToType, NextLines, Time, OtherNodeIP}) ->
     % Move the cursor to the top-left corner (row 1, column 1)
@@ -123,7 +91,7 @@ game_loop({Score, WordsToType, NextLines, Time, OtherNodeIP}) ->
             % check if user meets the condition for super power: Score is at least 3 AND user typed the word "oye"
             Super = lists:member("oye", TypedWords) andalso HasSuperPower,
             % check user_input vs TypedWords
-            WordsRemain = match_head(TypedWords, WordsToType), 
+            WordsRemain = util:match_head(TypedWords, WordsToType), 
             case {Super, length(WordsRemain)} of 
                 {true, _} -> 
                     Challenge = lists:filter(fun(X) -> X =/= "oye" end, TypedWords),
@@ -161,6 +129,6 @@ game_loop({Score, WordsToType, NextLines, Time, OtherNodeIP}) ->
 
 game_nextline(Score, NextLines, Maxtime, OtherNodeIP) -> 
     [NextLine|NewNextLines] = NextLines, 
-    NewWords = get_wordlist(NextLine),                
+    NewWords = util:get_wordlist(NextLine),                
     % start another round
     game_loop({Score, NewWords, NewNextLines, Maxtime, OtherNodeIP}).
