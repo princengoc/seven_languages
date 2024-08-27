@@ -2,11 +2,6 @@
 
 Key Clash is like a real-time, two-player Tetris battle but for typing. Two players race through a document on separate computers, typing as fast and accurately as possible. As they progress, they build up Super Power, which can be unleashed to send a Challenge line to their opponent, making their job harder.
 
-<video autoplay muted playsinline controls width="640">
-  <source src="output.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
 This is a beta version with very minimal UI. Built in Erlang, Key Clash explores real-time concurrency and networking in a simple, terminal-based game. If you're learning Erlang or want to contribute, come join us and help level up the game!
 
 Here's a [short rant](https://princengoc.github.io/key_clash.html) on my experience learning Erlang while coding this up. 
