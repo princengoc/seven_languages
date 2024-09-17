@@ -1,0 +1,7 @@
+resolver: lts-21.21  # Or any recent LTS version you want to use
+packages:
+- .
+extra-deps:
+  - random-1.2.1.2   # Add the random library version you need
+  - HUnit-1.6.2.0
+
