@@ -13,7 +13,7 @@ data Card = Card
 
 -- A deck is a map from (integers) to (cards)
 mkDeckMap :: Int -> Map Int Card
-mkDeckMap n = fromList [(i, Card (i `mod` 13 + 1) (toEnum (i `mod` 4))) | i <- [1..n]]
+mkDeckMap n = fromList [(i, Card (i `mod` 13 + 1) (toEnum (i `mod` 4))) | i <- [0..(n-1)]]
 
 
 -- for QuickCheck unit tests

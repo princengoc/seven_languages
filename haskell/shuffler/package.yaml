@@ -25,6 +25,7 @@ dependencies:
 - containers
 - HUnit
 - QuickCheck
+- monad-bayes
 
 ghc-options:
 - -Wall
